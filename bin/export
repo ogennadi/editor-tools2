@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# Ruby 2.0
+
+# Takes an ICE collection URL as input and outputs a file containing:
+#
+# Usage: export-collection [collection-URL] -o [output-filename]
+
+require 'optparse'
+
+def main()
+  puts ARGV[0]
+  puts get_options[:output]
+end
+
+
+def get_options
+  opts = {}
+  OptionParser.new do |options|
+    options.on("-o", "--output O", "Filename to output the collection") do |o|
+      opts[:output] = o
+    end
+  end.parse!
+
+  opts
+end
+
+main()
