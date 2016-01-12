@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+# Ruby 2.0
+
+# Takes an ICE collection URL as input and outputs a file containing:
+#    index.json
+#    partid0.seq
+#    partid1.seq
+#    partid2.seq
+#    ...
+#
+# Usage: export-collection [collection-URL] -c [client-id] -t [access-token] -o [output-filename]
+
+require 'optparse'
+require 'uri'
+
+INDEX_FILE = 'index'
+
+def main
+  collection_url  = ARGV[0]
+  opts            = get_options()
+  output_filename = opts[:output]
+  creds           = {
+                      clientid: opts[:clientid],
+                      token: opts[:token]
+                    }
+  entry_count     = get_entry_count(creds, collection_url)
+  dir             = Dir.mktmpdir
+
+
+  begin
+    write_index(creds, collection_url)
+    entry_ids = get_entry_ids(INDEX_FILE)
+
+    entry_ids.each do  |id|
+      host            = host_part(collection_url)
+      write_sequence(sessionid, host, id)
+    end
+
+    zip(dir, output_filename)
+  ensure
+    #FileUtils.remove_entry dir
+  end
+end
+
+
+def get_options
+  opts = {}
+  OptionParser.new do |options|
+    options.on("-o", "--output O", "Filename to output the collection") do |o|
+      opts[:output] = o
+    end
+
+    options.on("-t", "--token T", "ICE API Token") do |t|
+      opts[:token] = t
+    end
+
+    options.on("-c", "--client C", "ICE API Client ID") do |c|
+      opts[:clientid] = c
+    end
+  end.parse!
+
+  opts
+end
+
+def get_entry_count(creds_hash, collection_url)
+  host = get_host(collection_url)
+  folder_id = get_folder_id(collection_url)
+  client = creds_hash[:clientid]
+  token = creds_hash[:token]
+  command = <<EOF
+curl  --request GET \
+  --header "X-ICE-API-Token-Client: #{client}" \
+  --header "X-ICE-API-Token: #{token}" \
+  --insecure \
+  --verbose \
+  #{host}/rest/folders/#{folder_id}/entries | \
+  jq -r '.count'
+EOF
+
+  shell(command)
+end
+
+def get_host(collection_url)
+  uri = URI.parse(collection_url)
+  uri.path = ''
+  uri
+end
+
+# Example URLs:
+#   https://registry.jbei.org/folders/279
+#   https://registry.jbei.org/folders/279/
+def get_folder_id(collection_url)
+  uri = URI.parse(collection_url)
+  uri.path.match('folders\/(\d+)')[1]
+end
+
+def shell(command)
+  puts command
+  exec command
+end
+
+
+# Tests
+
+# get_entry_count({clientid: 'dev', token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE='},
+# 'https://registry.jbei.org/folders/279')
+# 2
