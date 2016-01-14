@@ -12,7 +12,6 @@ class Paper < ActiveRecord::Base
                                                           -t #{token} \
                                                           -o #{export_path}"
 
-
     if $? == 0
       return output
     else

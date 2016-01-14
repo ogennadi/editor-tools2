@@ -10,7 +10,9 @@
 #
 # Usage: export-collection [collection-URL] -c [client-id] -t [access-token] -o [output-filename]
 
+require 'json'
 require 'optparse'
+require 'tmpdir'
 require 'uri'
 
 INDEX_FILE = 'index'
@@ -24,7 +26,6 @@ def main
                       token: opts[:token]
                     }
   entry_count     = get_entry_count(creds, collection_url)
-  dir             = Dir.mktmpdir
 
 
   begin
@@ -40,8 +41,57 @@ def main
   ensure
     #FileUtils.remove_entry dir
   end
+
+  exit(1)
 end
 
+class Export
+  def initialize(args)
+    @clientid = args[:clientid]
+    @token = args[:token]
+    @output_filename = args[:output_filename]
+    @collection_url = args[:collection_url]
+  end
+
+  def extra_init()
+    @host = get_host(@collection_url)
+    @collection_id = get_folder_id(@collection_url)
+    @collection_count = get_entry_count()
+  end
+
+  def write_index()
+    dir = Dir.mktmpdir
+    outfile = File.join(dir, INDEX_FILE)
+
+    output = ice("/rest/folders/#{@collection_id}/entries?limit=#{@collection_count}")
+    File.open(outfile, 'w') { |file| file.write(output) }
+
+    if $? == 0
+      return outfile
+    else
+      raise "I could not write the index file."
+    end
+  end
+
+  def ice(path)
+    command = <<EOF
+curl  --request GET \
+  --header "X-ICE-API-Token-Client: #{@clientid}" \
+  --header "X-ICE-API-Token: #{@token}" \
+  --insecure \
+  --verbose \
+  #{@host}#{path}
+EOF
+
+    shell(command)
+  end
+
+  def get_entry_count()
+    entry_json = ice("/rest/folders/#{@collection_id}/entries")
+    JSON.parse(entry_json)[:count]
+  end
+
+end
 
 def get_options
   opts = {}
@@ -62,24 +112,6 @@ def get_options
   opts
 end
 
-def get_entry_count(creds_hash, collection_url)
-  host = get_host(collection_url)
-  folder_id = get_folder_id(collection_url)
-  client = creds_hash[:clientid]
-  token = creds_hash[:token]
-  command = <<EOF
-curl  --request GET \
-  --header "X-ICE-API-Token-Client: #{client}" \
-  --header "X-ICE-API-Token: #{token}" \
-  --insecure \
-  --verbose \
-  #{host}/rest/folders/#{folder_id}/entries | \
-  jq -r '.count'
-EOF
-
-  shell(command)
-end
-
 def get_host(collection_url)
   uri = URI.parse(collection_url)
   uri.path = ''
@@ -95,13 +127,22 @@ def get_folder_id(collection_url)
 end
 
 def shell(command)
-  puts command
-  exec command
+  #puts command
+  `#{command}`
 end
 
 
 # Tests
+export = Export.new(clientid: 'dev',
+                    token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
+                    output_filename: 'index',
+                    collection_url: 'https://registry.jbei.org/folders/279')
+export.extra_init()
+puts export.write_index()
+# "/tmp/index"
 
-# get_entry_count({clientid: 'dev', token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE='},
-# 'https://registry.jbei.org/folders/279')
-# 2
+#export.get_entry_count()
+#2
+
+# puts get_host('https://registry.jbei.org/folders/279')
+# https://registry.jbei.org
