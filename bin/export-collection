@@ -2,7 +2,7 @@
 # Ruby 2.0
 
 # Takes an ICE collection URL as input and outputs a file containing:
-#    index.json
+#    index
 #    partid0.seq
 #    partid1.seq
 #    partid2.seq
@@ -21,28 +21,12 @@ def main
   collection_url  = ARGV[0]
   opts            = get_options()
   output_filename = opts[:output]
-  creds           = {
-                      clientid: opts[:clientid],
-                      token: opts[:token]
-                    }
-  entry_count     = get_entry_count(creds, collection_url)
+  export = Export.new(clientid: 'dev',
+                      token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
+                      output_filename: output_filename,
+                      collection_url: 'https://registry.jbei.org/folders/279')
 
-
-  begin
-    write_index(creds, collection_url)
-    entry_ids = get_entry_ids(INDEX_FILE)
-
-    entry_ids.each do  |id|
-      host            = host_part(collection_url)
-      write_sequence(sessionid, host, id)
-    end
-
-    zip(dir, output_filename)
-  ensure
-    #FileUtils.remove_entry dir
-  end
-
-  exit(1)
+  export.write_zip()
 end
 
 class Export
@@ -51,35 +35,58 @@ class Export
     @token = args[:token]
     @output_filename = args[:output_filename]
     @collection_url = args[:collection_url]
+    @collection_id = get_folder_id(@collection_url)
+    @host = get_host(@collection_url)
+    @tmpdir = Dir.mktmpdir
   end
 
-  def extra_init()
-    @host = get_host(@collection_url)
-    @collection_id = get_folder_id(@collection_url)
+  def write_zip()
     @collection_count = get_entry_count()
+    write_index()
+    write_sequences()
+    shell("zip --recurse-paths --junk-paths #{@output_filename} #{@tmpdir}")
+    puts @output_filename
   end
 
   def write_index()
-    dir = Dir.mktmpdir
-    outfile = File.join(dir, INDEX_FILE)
+    outfile = File.join(@tmpdir, INDEX_FILE)
 
     output = ice("/rest/folders/#{@collection_id}/entries?limit=#{@collection_count}")
     File.open(outfile, 'w') { |file| file.write(output) }
 
     if $? == 0
+      @collection_file = outfile
       return outfile
     else
       raise "I could not write the index file."
     end
   end
 
-  def ice(path)
+  def write_sequences()
+    #raise "The entries have not yet been downloaded" unless @collection_file
+    collection = JSON.parse(File.read(@collection_file))
+    puts @collection_file
+
+    collection["entries"].map do |entry_hash|
+      write_sequence(entry_hash["id"])
+    end
+  end
+
+  def write_sequence(entry_id)
+    sequence_file = File.join(@tmpdir, "#{entry_id}.seq")
+    ice("/rest/file/#{entry_id}/sequence/original", output_file: sequence_file)
+    sequence_file
+  end
+
+  def ice(path, opts = {})
+    output_file_option = "--output #{opts[:output_file]}"
     command = <<EOF
 curl  --request GET \
   --header "X-ICE-API-Token-Client: #{@clientid}" \
   --header "X-ICE-API-Token: #{@token}" \
   --insecure \
   --verbose \
+  #{output_file_option if opts[:output_file]} \
   #{@host}#{path}
 EOF
 
@@ -90,7 +97,6 @@ EOF
     entry_json = ice("/rest/folders/#{@collection_id}/entries")
     JSON.parse(entry_json)[:count]
   end
-
 end
 
 def get_options
@@ -127,22 +133,30 @@ def get_folder_id(collection_url)
 end
 
 def shell(command)
-  #puts command
+  puts command
   `#{command}`
 end
 
+main()
 
 # Tests
-export = Export.new(clientid: 'dev',
-                    token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
-                    output_filename: 'index',
-                    collection_url: 'https://registry.jbei.org/folders/279')
-export.extra_init()
-puts export.write_index()
+
+# export = Export.new(clientid: 'dev',
+#                     token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
+#                     output_filename: 'export.zip',
+#                     collection_url: 'https://registry.jbei.org/folders/279')
+
+# puts export.write_zip()
+# export.zip
+
+# puts export.write_sequence(48646)
+# tmp/8646.seq
+
+# puts export.write_index()
 # "/tmp/index"
 
-#export.get_entry_count()
-#2
+# puts export.get_entry_count()
+# 2
 
 # puts get_host('https://registry.jbei.org/folders/279')
 # https://registry.jbei.org
