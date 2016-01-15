@@ -70,8 +70,6 @@ class PapersController < ApplicationController
     else
       flash[:error] = "An error occured while exporting the bioparts."
     end
-
-    redirect_to papers_path
   end
 
   private
@@ -82,6 +80,6 @@ class PapersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def paper_params
-      params.require(:paper).permit(:manuscript_id, :author, :status, :paragon_plus_url, :reviewer_email1, :reviewer_email2, :reviewer_email3)
+      params.require(:paper).permit(:manuscript_id, :author, :status, :paragon_plus_url, :bioparts_url, :reviewer_email1, :reviewer_email2, :reviewer_email3)
     end
 end

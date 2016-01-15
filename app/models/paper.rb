@@ -7,13 +7,12 @@ class Paper < ActiveRecord::Base
 
   def export_collection
     clientid, token = File.readlines('config/accesstoken').map(&:strip)
-    export_path = Rails.root.join "public/exports/#{DateTime.now.to_i}-#{id}"
-    output = shell "bin/export-collection #{bioparts_url} -c #{clientid} \
+    export_path = Rails.root.join "public/exports/#{DateTime.now.to_i}-#{id}.zip"
+    shell "bin/export-collection #{self.bioparts_url} -c #{clientid} \
                                                           -t #{token} \
                                                           -o #{export_path}"
-
     if $? == 0
-      return output
+      return export_path
     else
       return false
     end

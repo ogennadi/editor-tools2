@@ -20,13 +20,34 @@ INDEX_FILE = 'index'
 def main
   collection_url  = ARGV[0]
   opts            = get_options()
-  output_filename = opts[:output]
-  export = Export.new(clientid: 'dev',
-                      token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
-                      output_filename: output_filename,
-                      collection_url: 'https://registry.jbei.org/folders/279')
 
+  exit(1) unless :collection_url
+
+  export = Export.new(clientid: opts[:clientid],
+                      token: opts[:token],
+                      output_filename: opts[:output],
+                      collection_url: collection_url)
   export.write_zip()
+  #exit(0)
+end
+
+def get_options
+  opts = {}
+  OptionParser.new do |options|
+    options.on("-o", "--output O", "Filename to output the collection") do |o|
+      opts[:output] = o
+    end
+
+    options.on("-t", "--token T", "ICE API Token") do |t|
+      opts[:token] = t
+    end
+
+    options.on("-c", "--client C", "ICE API Client ID") do |c|
+      opts[:clientid] = c
+    end
+  end.parse!
+
+  opts
 end
 
 class Export
@@ -99,24 +120,6 @@ EOF
   end
 end
 
-def get_options
-  opts = {}
-  OptionParser.new do |options|
-    options.on("-o", "--output O", "Filename to output the collection") do |o|
-      opts[:output] = o
-    end
-
-    options.on("-t", "--token T", "ICE API Token") do |t|
-      opts[:token] = t
-    end
-
-    options.on("-c", "--client C", "ICE API Client ID") do |c|
-      opts[:clientid] = c
-    end
-  end.parse!
-
-  opts
-end
 
 def get_host(collection_url)
   uri = URI.parse(collection_url)
