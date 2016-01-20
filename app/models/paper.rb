@@ -1,6 +1,12 @@
 class Paper < ActiveRecord::Base
   after_initialize :init
 
+  class << self
+    def statuses
+      [:under_review, :accepted, :rejected]
+    end
+  end
+
   def init
     status = :under_review
   end
