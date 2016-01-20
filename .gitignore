@@ -20,3 +20,7 @@ public/exports/*
 /log/*
 !/log/.keep
 /tmp
+
+# Junk
+.DS_Store
+/.idea/

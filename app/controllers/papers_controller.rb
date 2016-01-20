@@ -66,10 +66,13 @@ class PapersController < ApplicationController
     path = @paper.export_collection
 
     if path
+      flash[:notice] = "Paper was successfully exported."
       send_file path
     else
       flash[:error] = "An error occured while exporting the bioparts."
     end
+
+    #redirect_to papers_url
   end
 
   private

@@ -1,0 +1,11 @@
+<div class="page-header">
+  <%= link_to papers_path, class: 'btn btn-default' do %>
+    Back
+  <% end %>
+  <%= link_to @paper, class: 'btn btn-primary' do %>
+    Show
+  <% end %>
+  <h1>Editing paper</h1>
+</div>
+
+<%= render 'form' %>

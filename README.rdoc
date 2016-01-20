@@ -1,0 +1,6 @@
+== README
+
+You need the following to run this application:
+
+* Curl
+* Jq

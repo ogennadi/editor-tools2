@@ -2,7 +2,7 @@ class Paper < ActiveRecord::Base
   after_initialize :init
 
   def init
-    update(status: :under_review)
+    status = :under_review
   end
 
   def export_collection

@@ -1,0 +1,38 @@
+<div class="page-header">
+
+  <%= link_to papers_path, class: 'btn btn-default' do %>
+    Back
+  <% end %>
+  <%= link_to edit_paper_path(@paper), class: 'btn btn-primary' do %>
+    Edit
+  <% end %>
+  <h1>Show paper</h1>
+
+</div>
+
+<dl class="dl-horizontal">
+  <dt>Manuscript:</dt>
+  <dd><%= @paper.manuscript_id %></dd>
+
+  <dt>Author:</dt>
+  <dd><%= @paper.author %></dd>
+
+  <dt>Status:</dt>
+  <dd><%= @paper.status %></dd>
+
+  <dt>Paragon plus url:</dt>
+  <dd><%= @paper.paragon_plus_url %></dd>
+
+  <dt>Bioparts url:</dt>
+  <dd><%= link_to @paper.bioparts_url, @paper.bioparts_url %></dd>
+
+  <dt>Reviewer email1:</dt>
+  <dd><%= @paper.reviewer_email1 %></dd>
+
+  <dt>Reviewer email2:</dt>
+  <dd><%= @paper.reviewer_email2 %></dd>
+
+  <dt>Reviewer email3:</dt>
+  <dd><%= @paper.reviewer_email3 %></dd>
+
+</dl>
