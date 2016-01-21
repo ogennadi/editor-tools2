@@ -106,7 +106,6 @@ curl  --request GET \
   --header "X-ICE-API-Token-Client: #{@clientid}" \
   --header "X-ICE-API-Token: #{@token}" \
   --insecure \
-  --verbose \
   #{output_file_option if opts[:output_file]} \
   #{@host}#{path}
 EOF
@@ -116,7 +115,7 @@ EOF
 
   def get_entry_count()
     entry_json = ice("/rest/folders/#{@collection_id}/entries")
-    JSON.parse(entry_json)[:count]
+    JSON.parse(entry_json)["count"]
   end
 end
 
@@ -143,11 +142,11 @@ end
 main()
 
 # Tests
-
+#
 # export = Export.new(clientid: 'dev',
 #                     token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
 #                     output_filename: 'export.zip',
-#                     collection_url: 'https://registry.jbei.org/folders/279')
+#                     collection_url: 'https://registry.jbei.org/folders/171')
 
 # puts export.write_zip()
 # export.zip
