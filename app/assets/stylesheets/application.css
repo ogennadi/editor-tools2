@@ -14,3 +14,7 @@
  *= require_self
  *
  */
+.toolbar {
+    float: right;
+    padding-top: 10px;
+}
