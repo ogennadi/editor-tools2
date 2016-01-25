@@ -31,8 +31,8 @@
         <td><%= link_to_if !paper.manuscript_id.blank?,  paper.manuscript_id, paper %></td>
         <td><%= link_to_if !paper.author.blank?, paper.author, paper %></td>
         <td><%= link_to_if !paper.status.blank?, paper.status, paper %></td>
-        <td><%= paper.paragon_plus_url %></td>
-        <td><%= paper.bioparts_url %></td>
+        <td><%= link_to_if !paper.paragon_plus_url.blank?, paper.paragon_plus_url, paper.paragon_plus_url, target: '_blank' %></td>
+        <td><%= link_to_if !paper.bioparts_url.blank?, paper.bioparts_url, paper.bioparts_url, target: '_blank' %></td>
 
         <td><%= link_to 'Show', paper %></td>
         <td><%= link_to 'Edit', edit_paper_path(paper) %></td>
