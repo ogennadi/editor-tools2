@@ -26,7 +26,7 @@
   <dd><%= @paper.paragon_plus_url %></dd>
 
   <dt>Bioparts url:</dt>
-  <dd><%= link_to @paper.bioparts_url, @paper.bioparts_url %></dd>
+  <dd><%= link_to_if !@paper.bioparts_url.blank?, @paper.bioparts_url, @paper.bioparts_url, target: '_blank' %></dd>
 
   <dt>Reviewer email1:</dt>
   <dd><%= @paper.reviewer_email1 %></dd>
