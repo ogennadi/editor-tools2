@@ -94,9 +94,11 @@ class Export
   end
 
   def write_sequence(entry_id)
-    sequence_file = File.join(@tmpdir, "#{entry_id}.seq")
-    ice("/rest/file/#{entry_id}/sequence/original", output_file: sequence_file)
-    sequence_file
+    genbank = File.join(@tmpdir, "#{entry_id}.genbank")
+    sbol = File.join(@tmpdir, "#{entry_id}.sbol")
+    ice("/rest/file/#{entry_id}/sequence/genbank", output_file: genbank)
+    ice("/rest/file/#{entry_id}/sequence/sbol", output_file: sbol)
+    [genbank, sbol]
   end
 
   def ice(path, opts = {})
@@ -152,7 +154,8 @@ main()
 # export.zip
 
 # puts export.write_sequence(48646)
-# tmp/8646.seq
+# tmp/8646.gb
+# tmp/8646.sbol
 
 # puts export.write_index()
 # "/tmp/index"
