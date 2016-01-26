@@ -23,10 +23,16 @@
   <dd><%= status_to_text(@paper.status) %></dd>
 
   <dt>Paragon plus url:</dt>
-  <dd><%= @paper.paragon_plus_url %></dd>
+  <dd><%= link_to_if !@paper.paragon_plus_url.blank?,
+                     @paper.paragon_plus_url,
+                     @paper.paragon_plus_url,
+                     target: '_blank' %></dd>
 
   <dt>Bioparts url:</dt>
-  <dd><%= link_to_if !@paper.bioparts_url.blank?, @paper.bioparts_url, @paper.bioparts_url, target: '_blank' %></dd>
+  <dd><%= link_to_if !@paper.bioparts_url.blank?,
+                     @paper.bioparts_url,
+                     @paper.bioparts_url,
+                     target: '_blank' %></dd>
 
   <dt>Reviewer email1:</dt>
   <dd><%= @paper.reviewer_email1 %></dd>
