@@ -15,8 +15,6 @@ require 'optparse'
 require 'tmpdir'
 require 'uri'
 
-INDEX_FILE = 'index'
-
 def main
   collection_url  = ARGV[0]
   opts            = get_options()
@@ -62,7 +60,6 @@ class Export
   end
 
   def write_zip()
-    @collection_count = get_entry_count()
     write_index()
     write_sequences()
     shell("zip --recurse-paths --junk-paths #{@output_filename} #{@tmpdir}")
@@ -70,13 +67,30 @@ class Export
   end
 
   def write_index()
-    outfile = File.join(@tmpdir, INDEX_FILE)
+    write_json_index()
+    write_csv_index()
+  end
 
-    output = ice("/rest/folders/#{@collection_id}/entries?limit=#{@collection_count}")
+  def write_json_index()
+    outfile = File.join(@tmpdir, 'entries.json')
+    ice("/rest/folders/#{@collection_id}/entries?limit=#{get_entry_count()}",
+        output_file: outfile)
+    @collection_file = outfile
+  end
+
+  def write_csv_index()
+    outfile = File.join(@tmpdir, "index.csv")
+    data = '{"all":true,"folderId":' +
+        @collection_id +
+        ',"selectionType":"FOLDER","entryType":"ALL","entries":[],"destination":[]}'
+
+    csv_pointer         = ice("/rest/file/csv", method: "POST", data: data)
+    csv_file_on_server  = JSON.parse(csv_pointer)['value']
+    output              = ice("/rest/file/tmp/#{csv_file_on_server}")
+
     File.open(outfile, 'w') { |file| file.write(output) }
 
     if $? == 0
-      @collection_file = outfile
       return outfile
     else
       raise "I could not write the index file."
@@ -84,7 +98,7 @@ class Export
   end
 
   def write_sequences()
-    #raise "The entries have not yet been downloaded" unless @collection_file
+    raise "The entries have not yet been downloaded" unless @collection_file
     collection = JSON.parse(File.read(@collection_file))
     puts @collection_file
 
@@ -102,12 +116,16 @@ class Export
   end
 
   def ice(path, opts = {})
+    opts[:method] ||= "GET"
     output_file_option = "--output #{opts[:output_file]}"
     command = <<EOF
-curl  --request GET \
+curl  --request #{opts[:method]} \
   --header "X-ICE-API-Token-Client: #{@clientid}" \
   --header "X-ICE-API-Token: #{@token}" \
+  --header "Content-Type: application/json;charset=UTF-8" \
+  --header "Connection: keep-alive" \
   --insecure \
+  --data '#{opts[:data]}' \
   #{output_file_option if opts[:output_file]} \
   #{@host}#{path}
 EOF
@@ -116,8 +134,12 @@ EOF
   end
 
   def get_entry_count()
-    entry_json = ice("/rest/folders/#{@collection_id}/entries")
-    JSON.parse(entry_json)["count"]
+    unless @collection_count
+      entry_json = ice("/rest/folders/#{@collection_id}/entries")
+      @collection_count = JSON.parse(entry_json)["count"]
+    end
+
+    @collection_count
   end
 end
 
@@ -149,6 +171,9 @@ main()
 #                     token: 'rYXWBtWXCSFgtSdH0MowMMngwAxGu1SoS1NCuDO6WGE=',
 #                     output_filename: 'export.zip',
 #                     collection_url: 'https://registry.jbei.org/folders/171')
+#
+# puts export.write_json_index
+# entries.json
 
 # puts export.write_zip()
 # export.zip
@@ -157,11 +182,12 @@ main()
 # tmp/8646.gb
 # tmp/8646.sbol
 
-# puts export.write_index()
-# "/tmp/index"
+# puts File.open(export.write_index(), 'r').read
+# "Part ID","Principal Investigator","Principal Investigator Email","Funding Source","Intellectual Property","BioSafety Level","Name","Alias","Keywords","Summary","Notes","References","Links","Status","Creator","Creator Email","Circular","Backbone","Promoters","Replicates In","Origin of Replication","Selection Markers"
+# ...
 
 # puts export.get_entry_count()
-# 2
+# 10
 
 # puts get_host('https://registry.jbei.org/folders/279')
 # https://registry.jbei.org
