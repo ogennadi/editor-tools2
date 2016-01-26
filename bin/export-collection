@@ -21,7 +21,7 @@ def main
   collection_url  = ARGV[0]
   opts            = get_options()
 
-  exit(1) unless :collection_url
+  exit(1) unless collection_url
 
   export = Export.new(clientid: opts[:clientid],
                       token: opts[:token],
