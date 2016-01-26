@@ -30,7 +30,7 @@
       <%= content_tag_for(:tr, @papers) do |paper| %>
         <td><%= link_to_if !paper.manuscript_id.blank?,  paper.manuscript_id, paper %></td>
         <td><%= link_to_if !paper.author.blank?, paper.author, paper %></td>
-        <td><%= link_to_if !paper.status.blank?, paper.status, paper %></td>
+        <td><%= link_to_if !paper.status.blank?, status_to_text(paper.status), paper %></td>
         <td><%= link_to_if !paper.paragon_plus_url.blank?, paper.paragon_plus_url, paper.paragon_plus_url, target: '_blank' %></td>
         <td><%= link_to_if !paper.bioparts_url.blank?, paper.bioparts_url, paper.bioparts_url, target: '_blank' %></td>
 

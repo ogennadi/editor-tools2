@@ -20,7 +20,7 @@
   <dd><%= @paper.author %></dd>
 
   <dt>Status:</dt>
-  <dd><%= @paper.status %></dd>
+  <dd><%= status_to_text(@paper.status) %></dd>
 
   <dt>Paragon plus url:</dt>
   <dd><%= @paper.paragon_plus_url %></dd>

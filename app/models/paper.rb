@@ -1,14 +1,8 @@
 class Paper < ActiveRecord::Base
   after_initialize :init
 
-  class << self
-    def statuses
-      [:under_review, :accepted, :rejected]
-    end
-  end
-
   def init
-    status = :under_review
+    status = "under_review"
   end
 
   def export_collection
@@ -25,11 +19,11 @@ class Paper < ActiveRecord::Base
   end
 
   def publish
-    update(status: :published)
+    update(status: "accepted")
   end
 
   def reject
-    update(status: :rejected)
+    update(status: "rejected")
   end
 
 private
