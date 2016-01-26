@@ -7,7 +7,7 @@ class Paper < ActiveRecord::Base
 
   def export_collection
     clientid, token = File.readlines('config/accesstoken').map(&:strip)
-    export_path = Rails.root.join "public/exports/#{DateTime.now.to_i}-#{id}.zip"
+    export_path = Rails.root.join "public/exports/#{DateTime.now.to_i}-#{id}-#{author.parameterize}.zip"
     shell "bin/export-collection #{self.bioparts_url} -c #{clientid} \
                                                           -t #{token} \
                                                           -o #{export_path}"
