@@ -103,7 +103,7 @@ class Export
     puts @collection_file
 
     collection["entries"].map do |entry_hash|
-      write_sequence(entry_hash["id"])
+      write_sequence(entry_hash["partId"])
     end
   end
 
