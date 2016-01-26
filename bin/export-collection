@@ -79,7 +79,7 @@ class Export
   end
 
   def write_csv_index()
-    outfile = File.join(@tmpdir, "index.csv")
+    outfile = File.join(@tmpdir, "entries.csv")
     data = '{"all":true,"folderId":' +
         @collection_id +
         ',"selectionType":"FOLDER","entryType":"ALL","entries":[],"destination":[]}'
